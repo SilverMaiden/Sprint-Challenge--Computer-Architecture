@@ -5,7 +5,9 @@ import sys
 import os
 
 LDI = 0b10000010
+LD = 0b10000011
 PRN = 0b01000111
+PRA = 0b01001000
 HLT = 0b00000001
 ADD = 0b10100000
 MUL = 0b10100010
@@ -41,6 +43,8 @@ class CPU:
         self.branchtable = {}
         self.branchtable[HLT] = self.handle_HLT
         self.branchtable[LDI] = self.handle_LDI
+        self.branchtable[LD] = self.handle_LDI
+        self.branchtable[PRA] = self.handle_PRA
         self.branchtable[PRN] = self.handle_PRN
         self.branchtable[ADD] = self.handle_ADD
         self.branchtable[MUL] = self.handle_MUL
@@ -203,10 +207,23 @@ class CPU:
         operand_b = self.ram_read(self.pc + 2)
         self.reg[operand_a] = operand_b
 
+    def handle_LD(self):
+        operand_a = self.ram_read(self.pc + 1)
+        operand_b = self.ram_read(self.pc + 2)
+        print(operand_a, operand_b)
+        self.reg[operand_a] = operand_b
+
+
     def handle_PRN(self):
         reg_num = self.ram_read(self.pc + 1)
         print(self.reg[reg_num])
 
+    def handle_PRA(self):
+        operand_a = self.ram_read(self.pc + 1)
+        # Print to the console the ASCII character corresponding to the value in the given register.
+        # end="" should keep from going to a new line
+        print(chr(self.reg[operand_a]), end="")
+    
     def handle_PUSH(self):
         # decrement the stack pointer
         self.reg[7] -= 1
@@ -299,14 +316,16 @@ class CPU:
             value = ir
             op_count = value >> 6
             ir_length = 1 + op_count
-            #print(ir)
+            print(ir)
             #print(self.branchtable[ir]())
             # Below returning None, need to test
+            self.branchtable[ir]()
+            #print(self.branchtable[ir])
             if ir == 0 or None:
                 print(f"Unknown Instruction: {ir}")
                 sys.exit()
             
-            self.branchtable[ir]()
+
 
             #print(ir)
             
