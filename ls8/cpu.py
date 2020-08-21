@@ -2,6 +2,7 @@
 """CPU functionality."""
 
 import sys
+import os
 
 LDI = 0b10000010
 PRN = 0b01000111
@@ -67,21 +68,45 @@ class CPU:
 
     def load(self, file_name):
         """Load a program into memory."""
+        program = []
+
+        # If a file is specified as the argument, load that file
+        if len(sys.argv) > 1:
+            file_to_load = sys.argv[1]
+            address = 0
+
+            with open(os.path.join(sys.path[0], file_to_load), 'r') as f:
+                for line in f:
+                    string_val = line.split("#")[0].strip()
+                    if string_val == '':
+                        continue
+                    bin_val = int(string_val, 2)
+                    self.ram[address] = bin_val
+                    address += 1
+
+        else:
+            # If not argument, use hard-coded program:
+
+            program = [
+                # From print8.ls8
+                0b10000010,  # LDI R0,8
+                0b00000000,
+                0b00001000,
+                0b01000111,  # PRN R0
+                0b00000000,
+                0b00000001,  # HLT
+            ]
+            '''
+            # Use the following if you want to print an error message and exit instead:
+            print("Error: Filename of program to run is needed")
+            sys.exit(1)
+            '''
 
         address = 0
-        try:
-            with open(file_name) as file:
-                for line in file:
-                    split_line = line.split("#")[0]
-                    command = split_line.strip()
-                    if command == "":
-                        continue
-                    instruction = int(command, 2)
-                    self.ram[address] = instruction
-                    address += 1
-        except FileNotFoundError:
-            print(f"{sys.argv[0]}: {sys.argv[1]} file was not found")
-            sys.exit()
+
+        for instruction in program:
+            self.ram[address] = instruction
+            address += 1
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -283,7 +308,7 @@ class CPU:
             
             self.branchtable[ir]()
 
-            print(ir)
+            #print(ir)
             
             #print(self.branchtable[ir]())
 
