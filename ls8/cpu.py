@@ -274,12 +274,12 @@ class CPU:
             value = ir
             op_count = value >> 6
             ir_length = 1 + op_count
-            print(ir)
+            self.branchtable[ir]()
+            print(self.branchtable[ir]())
             # Below returning None, need to test
             if ir == 0 or None:
                 print(f"Unknown Instruction: {ir}")
                 sys.exit()
-            self.branchtable[ir]()
 
             if ir != CALL and ir != RET and ir != JMP and ir != JEQ and ir != JNE:
                 self.pc += ir_length
